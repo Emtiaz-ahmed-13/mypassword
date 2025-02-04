@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        margin: 0;
+        padding: 20px;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 20px;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        padding-top: 60px;
+      }
+
+      .color-card {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .color-swatch {
+        height: 100px;
+        width: 100%;
+      }
+
+      .color-info {
+        padding: 15px;
+      }
+
+      .color-name {
+        font-weight: 600;
+        margin: 0 0 5px 0;
+      }
+
+      .color-value {
+        font-family: monospace;
+        font-size: 0.9em;
+        margin: 0;
+      }
+
+      /* Light theme */
+      :root {
+        --background: 0 0% 100%;
+        --foreground: 224 71.4% 4.1%;
+        --card: 0 0% 100%;
+        --card-foreground: 224 71.4% 4.1%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 224 71.4% 4.1%;
+        --primary: 262.1 83.3% 57.8%;
+        --primary-foreground: 210 20% 98%;
+        --secondary: 220 14.3% 95.9%;
+        --secondary-foreground: 220.9 39.3% 11%;
+        --muted: 220 14.3% 95.9%;
+        --muted-foreground: 220 8.9% 46.1%;
+        --accent: 220 14.3% 95.9%;
+        --accent-foreground: 220.9 39.3% 11%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 20% 98%;
+        --border: 220 13% 91%;
+        --input: 220 13% 91%;
+        --ring: 262.1 83.3% 57.8%;
+        --chart-1: 12 76% 61%;
+        --chart-2: 173 58% 39%;
+        --chart-3: 197 37% 24%;
+        --chart-4: 43 74% 66%;
+        --chart-5: 27 87% 67%;
+      }
+
+      /* Dark theme */
+      [data-theme="dark"] {
+        --background: 224 71.4% 4.1%;
+        --foreground: 210 20% 98%;
+        --card: 224 71.4% 4.1%;
+        --card-foreground: 210 20% 98%;
+        --popover: 224 71.4% 4.1%;
+        --popover-foreground: 210 20% 98%;
+        --primary: 263.4 70% 50.4%;
+        --primary-foreground: 210 20% 98%;
+        --secondary: 215 27.9% 16.9%;
+        --secondary-foreground: 210 20% 98%;
+        --muted: 215 27.9% 16.9%;
+        --muted-foreground: 217.9 10.6% 64.9%;
+        --accent: 215 27.9% 16.9%;
+        --accent-foreground: 210 20% 98%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 210 20% 98%;
+        --border: 215 27.9% 16.9%;
+        --input: 215 27.9% 16.9%;
+        --ring: 263.4 70% 50.4%;
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 340 75% 55%;
+      }
+
+      [data-theme="dark"] {
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
+      }
+
+      [data-theme="dark"] .theme-toggle {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+      }
+
+      [data-theme="light"] .theme-toggle {
+        background: hsl(var(--secondary));
+        color: hsl(var(--secondary-foreground));
+      }
+
+      [data-theme="dark"] .color-card {
+        background: hsl(var(--card));
+        color: hsl(var(--card-foreground));
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+    <div class="container" id="colorContainer"></div>
+
+    <script>
+      function hslToHex(h, s, l) {
+        l /= 100;
+        const a = (s * Math.min(l, 1 - l)) / 100;
+        const f = (n) => {
+          const k = (n + h / 30) % 12;
+          const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+          return Math.round(255 * color)
+            .toString(16)
+            .padStart(2, "0");
+        };
+        return `#${f(0)}${f(8)}${f(4)}`;
+      }
+
+      function createColorCard(name, value) {
+        const [h, s, l] = value.split(" ").map(Number);
+        const hexColor = hslToHex(h, s, l);
+
+        return `
+                <div class="color-card">
+                    <div class="color-swatch" style="background-color: hsl(${value})"></div>
+                    <div class="color-info">
+                        <h3 class="color-name">${name}</h3>
+                        <p class="color-value">HSL: ${value}</p>
+                        <p class="color-value">HEX: ${hexColor}</p>
+                    </div>
+                </div>
+            `;
+      }
+
+      function toggleTheme() {
+        const body = document.body;
+        const currentTheme = body.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+        body.setAttribute("data-theme", newTheme);
+        updateColors();
+      }
+
+      function updateColors() {
+        const container = document.getElementById("colorContainer");
+        container.innerHTML = "";
+
+        const style = getComputedStyle(document.documentElement);
+        const variables = Array.from(document.styleSheets)
+          .filter((sheet) => sheet.cssRules)
+          .flatMap((sheet) => Array.from(sheet.cssRules))
+          .find(
+            (rule) =>
+              rule.selectorText === ":root" ||
+              rule.selectorText ===
+                '[data-theme="' +
+                  document.body.getAttribute("data-theme") +
+                  '"]'
+          ).style;
+
+        for (let i = 0; i < variables.length; i++) {
+          const name = variables[i];
+          if (name.startsWith("--")) {
+            const value = style.getPropertyValue(name).trim();
+            if (value && !name.includes("radius")) {
+              container.innerHTML += createColorCard(
+                name.replace("--", ""),
+                value
+              );
+            }
+          }
+        }
+      }
+
+      updateColors();
+    </script>
+  </body>
+</html>
